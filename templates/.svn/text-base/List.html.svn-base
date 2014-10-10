@@ -1,0 +1,383 @@
+$def with (hname, text)
+
+
+<!doctype html>
+
+<html>
+
+    <head>
+        
+        <!-- Guys,                                -->
+        <!-- In Javascript you comment like this  -->
+        <!--                                      -->
+
+        <!-- The favicon, is just the litle icon on the address bar --->
+        <link rel="icon" href="/static/favicon.gif" type="image/gif" />
+        
+        
+        <title>Fault Tolerant Systems 2012</title>
+        
+        <!-- The style definition is ususally kept in separated CSS files, ou find them in the 'static' folder. Here they are loaded.-->
+        <link rel="stylesheet" type="text/css" href="/static/ftkMonitoring.css" />
+		<link rel="stylesheet" type="text/css" href="/static/tip.css" />
+    <link rel="stylesheet" href="/static/css/base/jquery-ui.css">
+
+    <!-- <link type="text/css" href="/static/css/ui-lightness/jquery-ui-1.8.13.custom.css" rel="Stylesheet" /> -->	
+		
+        <!-- I import the JQuery library. Is now a sort of da-facto.  -->
+		<script type="text/javascript" src="/static/js/jquery-1.8.3.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>
+        <script type="text/javascript" src="/static/js/jtip.js"></script>
+        <script type="text/javascript">
+
+
+	jQuery(function() 
+	{
+         // Ok, the command above is *essential*. It is the command that is automatically called by the browser 
+         // *when the page has finished loading*.
+         // This is then the time for the actions : send requests, listening to user commands, and everything else.
+         // Everything starts here. 
+
+         // Here we are in Javascipt, so the comments are c++ styled.
+
+         // myResponse is the space (see the div response-panel under) right under the input bar.
+         // JQuery("#response-panel") is very useful type of command, because it provides me the response panel's part 
+         // of page.
+         // The symbol '#', is jsut a code, that stands for 'the object', if I had used, for example the '.', if would have 
+         // meant 'the class'.
+         // It is a very useful command to work with just the part of page that you need.
+		 
+		var	myResponse = jQuery("#response-panel"); 
+		var analysis_panel = jQuery("#monitors-panel"); 
+
+                
+    var number_server_spinner = jQuery("#spinner");
+    var number_server_label   = jQuery("#spinner_label");
+    var global_method         = "Redundancy" ; 
+
+    number_server_spinner.spinner({
+                        min: 0,
+                        max: 100,
+                        value: 3,
+                        increment:'fast',
+                        step:1  // this will increment or decrement by 5    
+                        })
+    number_server_spinner.width(20);
+    number_server_spinner.spinner("value", 3);
+
+    //number_server_spinner.hide();
+    //number_server_label.hide();
+
+
+    var lambda_spinner = jQuery("#spinner_lambda");
+    lambda_spinner.spinner({
+                        min: 0,
+                        max: 100,
+                        increment:'fast',
+                        step:1  // this will increment or decrement by 5    
+                    });
+    lambda_spinner.width(20);
+    lambda_spinner.spinner( "value", 5 );
+
+
+    var availability_spinner = jQuery("#spinner_availability");
+    availability_spinner.spinner({
+                        min: 0,
+                        max: 100,
+                        increment:'fast',
+                        step:1  // this will increment or decrement by 5    
+                    });
+    availability_spinner.width(20);
+    availability_spinner.spinner( "value", 5 );
+
+    var sort_time_spinner     = jQuery("#spinner_sort");
+    sort_time_spinner.spinner({
+                        min: 0,
+                        max: 100,
+                        increment:'fast',
+                        step:1  // this will increment or decrement by 5    
+                    });
+    sort_time_spinner.width(20);
+    sort_time_spinner.spinner( "value", 15 );
+
+    // Retrieving the method
+    var methodmenu=document.getElementById("method")
+    methodmenu.onchange=function()
+    { //run some code when "onchange" event fires
+      var chosenoption=this.options[this.selectedIndex] //this refers to "methodmenu"
+
+      global_method = this.options[this.selectedIndex].value; 
+
+      if (chosenoption.value == "Redundancy"){
+        number_server_spinner.show();
+        number_server_label.show();
+      }
+      else
+        {
+          number_server_spinner.hide();
+          number_server_label.hide();
+        }  
+    }
+
+    // Retrieving the method
+    var analysismenu = document.getElementById("analysis")
+    var calculate_analysis = true
+    analysismenu.onchange = function()
+    { //run some code when "onchange" event fires
+      var chosenoption=this.options[this.selectedIndex] //this refers to "methodmenu"
+
+
+      if (chosenoption.value == "Yes"){
+          calculate_analysis = true ;
+          alert( 'Calculated : yes' ) ;
+        }
+      else
+        {
+          calculate_analysis = false ;
+        }
+    }
+
+    // The function updating the result		
+		function updateRes()
+		{
+
+          //alert( 'I am updating' );
+			
+          data_in = {}    
+					// HERE it is !!! The famous AJAX ! You can see it better on the ajax website !
+          jQuery.ajax({
+            type: "POST",
+            data: data_in,
+            url: "/update",
+            dataType: "json" ,
+            success: function(data) {
+              // This is the function that gets called *if* the json(information) coming from the erver is readable-valid.
+
+              // With JQuery I serialize the received Json using the foreach function, that is really nice (see dcoumention)
+              content = "";
+              
+              if ( "Update" in data )  
+              {
+
+                  jQuery.each( data["Update"] , function(index, value) 
+                  {
+                      content += value + "<br>" ; 
+                  });
+
+              }              
+
+              if ( "Result" in data )  
+              {
+                content += "<br>" + "Result : " + data["Result"] 
+              }
+              else
+              {
+                setTimeout(updateRes, 4000) ;
+              }  
+
+              myResponse.html( myResponse.html() + content );
+        
+            },
+            error: function(xhr) {
+
+              // This, otherwise, is the function that gets called if there is an error  								
+              myResponse.html( 'ERROR');
+              alert( 'ERROR');
+
+            }
+          });
+									
+          return true;
+    }
+
+
+
+		// The function controlling the 'Execute' button		
+		function sendcommand()
+    {
+      // Here i go to pick the string that I have inserted form the input line in the web page
+      var inputList = jQuery("#commandform").find( 'input[name="list"]' ).val();
+
+      var data_in = {};
+      data_in['inputList'] = inputList;
+      data_in['method'] = global_method  ;
+      data_in['availability'] = availability_spinner.spinner( "value" );
+      data_in['lambda'] = lambda_spinner.spinner( "value" );
+      data_in['number_of_servers'] = number_server_spinner.spinner( "value" );
+      data_in['calculate_analysis'] = calculate_analysis ;
+      data_in['sort_time'] = sort_time_spinner.spinner( "value" )  ;
+
+      //var output = '';
+      //for (property in data_in) {
+      //  output += property + ': ' + data_in[property]+'; ';
+      //}
+      //alert(output);
+
+
+      // HERE it is !!! The famous AJAX ! You can see it better on the ajax website !
+      jQuery.ajax({
+        type: "POST",
+        data: data_in,
+        url: "/request",
+        dataType: "json" ,
+        success: function(data) {
+          // This is the function that gets called *if* the json(information) coming from the erver is readable-valid.
+
+          // With JQuery I srialize the received Json using the foreach function, that is really nice (see dcoumention)
+          content = '<h2>Calculation :</h2>' ;
+
+          if ( "Update" in data )  
+            {
+
+              jQuery.each( data["Update"] , function(index, value) 
+                          {
+                            content += value + "<br>" ; 
+                          });
+
+            };
+
+            content += "<br>" ; 
+
+            /// Print the returned json
+            myResponse.html(content);
+
+
+            if ( "Analysis" in data ) 
+            {
+
+              if ( data["Analysis"] == "No_Library"  )
+              {
+                 analysis_panel.html("Data Analysis cannot be performed, because the library <br> numpy and scipy was not installed on the server. <br> Please install it on the server or select No on the Analysis input field.");
+              
+              }
+              else
+              {
+
+                my_content = '<br><h2>Analysis :</h2>' ;
+                jQuery.each( data["Analysis"] , function(key, value) 
+                          {
+                            my_content += key + ' : ' +value + "<br>" ; 
+                          });
+                 analysis_panel.html( my_content );
+              }  
+
+            }
+
+            setTimeout(updateRes, 4000) ;
+
+        },
+        error: function(xhr) {
+
+          // This, otherwise, is the function that gets called if there is an error  								
+          myResponse.html( 'Error Parsing the Inputs, please insert them better ! :D');
+          alert( 'Error Parsing the Inputs, please insert them better ! :D');
+
+        }
+      });
+
+      return true;
+    }	
+		
+		// Qui' dico che quando di clicca il link execute (vedi div sotto) viene triggherata la funzione sendcommand		
+		jQuery("#execute_").click(sendcommand);
+                                        
+        });
+                 
+    </script>
+    </head>
+      <body>
+
+        <br class="clear" /><br /><br />
+        <div id="content">
+          <!-- 						 -->
+            <!-- Here we are on HTML. Here I will use the variable 'dollar' '\$' as you will see.
+             This variable comes from the first line of this file and from the GET of the index page in python
+             This way the server passes some information calculated since the start.
+             Beware ! Always careful to the dollar (no second meanings..), because it might be ambiguous.
+             In this case the dollar is the keyword for webPY (the Frameword that we are using).
+             [The Framework developers decided to use such symbol, but ALSO the library JQuery uses it for shortcuts]
+             So ... we solve this by not using the JQuery shortcut, and always write 'JQuery'. The dollar for us stands for webPY
+             -->
+            <h1 class="pagehead"><span class="monitoring">  LIST APPLICATION </span> <span class="running"> <span class="runningat">running at</span> <span class="hostname">$hname</span> </span> </h1>
+            <div class="description">
+				
+				
+				
+				    <!-- LOOK HERE !! -->
+                <!-- LOOK HERE !! -->
+                <!-- LOOK HERE !! -->
+                <!-- LOOK HERE !! -->
+                <!-- Here is the form ! Just Basic HTML -->
+                <div class="comando">    
+                  <div class="commandline">    
+                    <form id="commandform"> 
+                      <p>
+                        <span class="formInfo"><a href="static/help.htm" class="jTip" id="one" name="The Command form">?</a></span>
+                        <font size = 2 color="white">Input List:</font>
+                        <input type="text" name="list" />
+                        <!-- The 'span' is just aestethic. The real important is "a", which is the link  -->
+                      </p>
+                      <p>
+                        <font size = 2 color="white"> Method:</font> 
+                        <select id='method' name='method'>
+                          <option>Redundancy</option>
+                          <option>Recovery Algorithm</option>
+                          <option>Recovery Hardware</option>
+                        </select>
+                        <label id ="spinner_label">
+                          <font size = 2 color="white">
+                            Number of servers:  
+                          </font> 
+                        </label>
+                        <input id="spinner" name="spinner" />
+                      </p>
+                      <p>
+                        <label id ="spinner_label_lambda">
+                          <font size = 2 color="white">
+                            Lambda [0-100] ( in failures/hour ) :  
+                          </font> 
+                        </label>
+                        <input id="spinner_lambda" name="spinner_lambda" />
+                        <label id ="spinner_label_sort">
+                          <font size = 2 color="white">
+                            Sort avg. time (in sec.) :
+                          </font> 
+                        </label>
+                        <input id="spinner_sort" name="spinner_sort" />
+                      </p>
+                      <p>
+                      <label id ="spinner_label_availability">
+                        <font size = 2 color="white">
+                          Availability [0-100]:  
+                        </font> 
+                      </label>
+                      <input id="spinner_availability" name="spinner_availability" />
+                      </p>
+                      <p>
+                        <font size = 2 color="white"> Analysis:</font> 
+                        <select id='analysis' name='analysis'>
+                          <option>Yes</option>
+                          <option>No</option>
+                        </select>
+                      </p>
+                      <p>
+                      <input id = "execute_" type='button' value='RUN' />
+                      </p>
+                    </form>
+                  </div><!-- /comandline -->    
+
+                    <div id="monitors-panel">
+                    </div><!-- monitors-panel -->
+                  <div class="response" id= "response-panel">    
+                    <!---$text-->			
+                  </div><!-- /response -->    
+                </div><!-- /comando -->
+              </div><!-- /description -->
+
+            </div><!-- /content -->
+
+            <div id="footer">
+              <a href="http://dtu.dk/" title="Creator">DTU_DK</a>
+            </div><!-- /footer -->
+            </body>
+            </html>

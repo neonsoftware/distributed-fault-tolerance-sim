@@ -1,0 +1,22 @@
+
+Every module :
+
++ will have an identical id
++ Is an instance of a subclass if the class sort_module
++ Will have a function exe(intpu, output) which will activate the core
+  function
+
++ Will periodically print its status in a log file
++ will return its status
++ will write its out in a output file
++ will count the time that took to perform its task
++ will be able to communicate with a guardian object
+
+
++ Will be killed by means of the function kill().
+
+New features : 
+
++ will have to remember the input
++ will do checkpointing
+

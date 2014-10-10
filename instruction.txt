@@ -1,0 +1,76 @@
+
+Here I summarize the situation: 
+
+Since we will want to try different server scenarios, we needed a
+unified server object. 
+
+A server will : 
+- Be able to sort a list. (his principal activity)
+- Be 'killable' by another module. This way we simulate hardware failure 
+- Be able to checkpoint its status. 
+- Be able to log its activity.
+- Be able to print its output to a file.
+
+As far as I did, I provide you a server interface that has those
+characteristics, and they are 'hidden' to the implementers. 
+
+Whenever you implement the superclass 'local_server', your class will
+inherit those characteristics, and will be able to be used for our
+purposes. 
+
+
+
+NOTE : The software engineering is far from being done. But we will
+shape incrementally, discussing, and getting each-other feedbacks. 
+
+
+
+
+
+
+°°°°°° To use the unified server form : 
+
+- Look at the example file example.py. And read the comments.
+- Create a new file <yourfile> , with the name ending in '.py'. 
+- Copy the content of the example file and create your server
+  <your_server_name> 
+
+
+°°°°°°  To try your server, do on your console :
+['>' means 'on the console', so do not type it.]
+
+1 - Launch python
+
+  > python
+
+2 - Import the python modules (2 mine + 1 yours !)
+
+  > import master
+  > import sort_serv
+  > import <yourfile>    (yes, without the '.py')
+
+3 - Create a master (2 mine + 1 yours !)
+
+  > a = master.Master()
+  > b = <yourfile>.<yourservername>( 2, 'hello', 5 )    
+  > a.add_server(b)
+  > a.run ([3,7,6,4,6])
+
+And it is done !
+
+Details : 
+
+- (2, 'hello', 5) stand for (id, files name, period for checkpointing)  
+- You will see in the tmp folder : 
+  - a log file hello.log that will grow with your status sentence
+  - the result of your sorting will be in hello.out
+  - the checkpoint will be in hello.pickle
+
+
+
+
+
+
+
+
+
