@@ -8,14 +8,11 @@ A simulator for back-end hardware and software fault scenario with the implement
 
 Uses multithreaded Python, webpy, scipy and Javascript/HTML for the frontend.
 
-Requirements
-===
-
-
 
 Usage
 ===
 
-> python server.py
+''' > python server.py '''
+''' > open browser at 127.0.0.1:80
 
 >
