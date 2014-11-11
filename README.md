@@ -23,3 +23,5 @@ Usage
 
 Then open browser at 127.0.0.1:80
 
+#### Mobile
+![ciao](https://github.com/neonsoftware/distributed-fault-tolerance-sim/blob/master/img/img.png)
